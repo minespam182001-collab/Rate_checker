@@ -2,96 +2,61 @@ import { Browser } from "playwright";
 import { ScrapeResult } from "./types";
 
 /**
- * Taptap Send shows its rate on the home calculator.
- * We intercept their pricing API first; fall back to DOM if needed.
+ * Taptap Send scraper.
+ *
+ * Their /api/fxRates endpoint requires a browser session (cookies set during
+ * page load). We let Playwright load the page, intercept the fxRates response,
+ * and extract the USD→INR rate directly from the JSON.
+ *
+ * Response shape:
+ *   { availableCountries: [{ isoCountryCode: "US", corridors: [{ isoCountryCode: "IN", fxRate: "95.xx" }] }] }
  */
 export async function scrapeTaptap(browser: Browser): Promise<ScrapeResult> {
   const context = await browser.newContext({
     userAgent:
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    viewport: { width: 1440, height: 900 },
     locale: "en-US",
+    timezoneId: "America/New_York",
   });
+
+  await context.addInitScript(`
+    Object.defineProperty(navigator, 'webdriver', { get: () => false });
+    window.chrome = { runtime: {} };
+  `);
+
   const page = await context.newPage();
 
   try {
     let capturedRate: number | null = null;
 
     page.on("response", async (response) => {
-      const url = response.url();
-      if (
-        url.includes("taptapsend.com") &&
-        (url.includes("quote") ||
-          url.includes("rate") ||
-          url.includes("price") ||
-          url.includes("calculate"))
-      ) {
-        try {
-          const json = await response.json();
-          const rate =
-            json?.exchangeRate ??
-            json?.exchange_rate ??
-            json?.rate ??
-            json?.data?.exchangeRate ??
-            json?.data?.rate;
-          if (rate) capturedRate = parseFloat(rate);
-        } catch {}
-      }
+      if (!response.url().includes("/api/fxRates")) return;
+      try {
+        const json = await response.json();
+        const countries: Array<{ isoCountryCode: string; corridors: Array<{ isoCountryCode: string; fxRate: string }> }> =
+          json?.availableCountries ?? [];
+        const us = countries.find((c) => c.isoCountryCode === "US");
+        const india = us?.corridors?.find((c) => c.isoCountryCode === "IN");
+        if (india?.fxRate) {
+          capturedRate = parseFloat(india.fxRate);
+        }
+      } catch {}
     });
 
     await page.goto("https://www.taptapsend.com/?lang=en-us", {
-      waitUntil: "load",
-      timeout: 30000,
+      waitUntil: "networkidle",
+      timeout: 45000,
     });
 
-    // Give the calculator a moment to render
-    await page.waitForTimeout(3000);
+    // Give the page time to fire the fxRates request if not yet done
+    if (!capturedRate) await page.waitForTimeout(3000);
 
-    if (!capturedRate) {
-      const selectors = [
-        '[data-testid*="rate"]',
-        '[data-testid*="exchange"]',
-        '[class*="exchangeRate"]',
-        '[class*="ExchangeRate"]',
-        '[class*="exchange-rate"]',
-        '[class*="rate-value"]',
-        '[class*="RateValue"]',
-      ];
-      for (const sel of selectors) {
-        const text = await page
-          .locator(sel)
-          .first()
-          .textContent({ timeout: 2000 })
-          .catch(() => null);
-        if (text) {
-          const match = text.match(/[\d,]+\.?\d*/);
-          if (match) {
-            const parsed = parseFloat(match[0].replace(/,/g, ""));
-            // Sanity check: USD/INR should be between 70 and 120
-            if (parsed > 70 && parsed < 120) {
-              capturedRate = parsed;
-              break;
-            }
-          }
-        }
-      }
-    }
+    if (!capturedRate) throw new Error("fxRates response did not include USD→INR corridor");
 
-    if (!capturedRate) throw new Error("Could not extract rate from Taptap Send");
-
-    return {
-      providerName: "Taptap Send",
-      usd_inr_rate: capturedRate,
-      fee_usd: 0,
-      success: true,
-    };
+    return { providerName: "Taptap Send", usd_inr_rate: capturedRate, fee_usd: 0, success: true };
   } catch (err) {
-    return {
-      providerName: "Taptap Send",
-      usd_inr_rate: 0,
-      fee_usd: 0,
-      success: false,
-      error: String(err),
-    };
+    return { providerName: "Taptap Send", usd_inr_rate: 0, fee_usd: 0, success: false, error: String(err) };
   } finally {
     await context.close();
   }
