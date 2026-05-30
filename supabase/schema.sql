@@ -25,7 +25,8 @@ create table if not exists rates (
   usd_inr_rate numeric(10,4) not null,
   fee_usd      numeric(8,2) not null default 0,
   scraped_at   timestamptz not null default now(),
-  is_stale     boolean not null default false
+  is_stale     boolean not null default false,
+  is_estimated boolean not null default false
 );
 
 -- Index used by the "latest rate per provider" query

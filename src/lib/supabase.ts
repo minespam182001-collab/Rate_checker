@@ -32,6 +32,7 @@ export interface Rate {
   fee_usd: number;
   scraped_at: string;
   is_stale: boolean;
+  is_estimated: boolean;
 }
 
 export interface RateWithProvider extends Rate {

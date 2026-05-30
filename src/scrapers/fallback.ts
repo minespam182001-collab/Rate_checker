@@ -54,6 +54,7 @@ export async function getFallbackRate(providerName: string): Promise<ScrapeResul
       usd_inr_rate: parseFloat(providerRate.toFixed(4)),
       fee_usd: config.fee,
       success: true,
+      is_estimated: true,
     };
   } catch (err) {
     return {

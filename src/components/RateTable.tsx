@@ -52,9 +52,14 @@ export default function RateTable({ rates }: Props) {
         ))}
       </div>
 
-      <p className="text-xs text-slate-400 text-center pt-2">
-        Rates updated every 15 minutes. Effective rate shown after fees, before your bank&apos;s charges.
-        We are not affiliated with any provider.
+      {sorted.some((r) => r.is_estimated) && (
+        <p className="text-xs text-slate-500 bg-slate-100 rounded-lg px-3 py-2 text-center">
+          <span className="font-medium">~ estimated</span> rates are derived from the mid-market rate + known provider spreads.
+          Always verify the exact rate on the provider&apos;s website before sending.
+        </p>
+      )}
+      <p className="text-xs text-slate-400 text-center">
+        Rates refreshed every 15 min · Not affiliated with any provider
       </p>
     </div>
   );

@@ -55,7 +55,13 @@ export default function ProviderRow({ entry, sendUSD, isBest, rank }: Props) {
         <ProviderAvatar name={provider.name} />
         <div className="min-w-0">
           <p className="font-semibold text-slate-800 text-sm leading-tight truncate">{provider.name}</p>
-          {is_stale && <p className="text-xs text-amber-500 font-medium">stale data</p>}
+          {is_stale ? (
+            <p className="text-xs text-amber-500 font-medium">stale data</p>
+          ) : entry.is_estimated ? (
+            <p className="text-xs text-slate-400 font-medium">~ estimated</p>
+          ) : (
+            <p className="text-xs text-green-600 font-medium">● live</p>
+          )}
         </div>
       </div>
 
@@ -64,7 +70,8 @@ export default function ProviderRow({ entry, sendUSD, isBest, rank }: Props) {
         <div>
           <p className="text-slate-400 text-xs mb-0.5">Exchange rate</p>
           <p className="font-semibold text-slate-800">
-            {usd_inr_rate.toFixed(2)} <span className="text-slate-400 font-normal text-xs">INR</span>
+            {entry.is_estimated ? "~" : ""}{usd_inr_rate.toFixed(2)}{" "}
+            <span className="text-slate-400 font-normal text-xs">INR</span>
           </p>
         </div>
 
