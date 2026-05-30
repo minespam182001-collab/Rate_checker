@@ -1,19 +1,26 @@
 import RateTable from "@/components/RateTable";
-import type { RateWithProvider } from "@/lib/supabase";
+import { supabaseAdmin, type RateWithProvider } from "@/lib/supabase";
 
 // Always render fresh — this is a live rate comparator, stale HTML is useless
 export const dynamic = "force-dynamic";
 
 async function getRates(): Promise<RateWithProvider[]> {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ??
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
-
   try {
-    const res = await fetch(`${baseUrl}/api/rates`, { cache: "no-store" });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return Array.isArray(data) ? data : [];
+    const { data, error } = await supabaseAdmin()
+      .from("rates")
+      .select("*, provider:providers(*)")
+      .order("scraped_at", { ascending: false })
+      .limit(50);
+
+    if (error || !data) return [];
+
+    // De-dup: keep only the most recent row per provider
+    const seen = new Set<string>();
+    return data.filter((row) => {
+      if (seen.has(row.provider_id)) return false;
+      seen.add(row.provider_id);
+      return true;
+    }) as RateWithProvider[];
   } catch {
     return [];
   }
