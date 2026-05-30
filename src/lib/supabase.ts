@@ -7,10 +7,16 @@ const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 // Browser-safe client (anon key)
 export const supabase = createClient(url, anonKey);
 
-// Server-only client with full DB access — used in API routes and scraper
+// Server-only client with full DB access — used in API routes and scraper.
+// Passes cache: 'no-store' to every fetch so Next.js never caches Supabase responses.
 export function supabaseAdmin() {
   if (!serviceKey) throw new Error("SUPABASE_SERVICE_ROLE_KEY is not set");
-  return createClient(url, serviceKey, { auth: { persistSession: false } });
+  return createClient(url, serviceKey, {
+    auth: { persistSession: false },
+    global: {
+      fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }),
+    },
+  });
 }
 
 // ---- shared types -------------------------------------------------------
