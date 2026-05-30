@@ -12,6 +12,7 @@ const TRUSTPILOT_SLUGS: Record<string, string> = {
   "Western Union": "westernunion.com",
   Xoom: "xoom.com",
   "ICICI Money2India": "money2india.com",
+  "Taptap Send": "taptapsend.com",
 };
 
 export async function scrapeTrustpilot(

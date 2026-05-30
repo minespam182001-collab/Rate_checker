@@ -40,5 +40,6 @@ insert into providers (name, logo_url, affiliate_url) values
   ('Wise',            'https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Wise_logo.svg/320px-Wise_logo.svg.png',         'https://wise.com/us/send-money/usd-to-inr'),
   ('Western Union',   'https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Western_Union_logo.svg/320px-Western_Union_logo.svg.png', 'https://www.westernunion.com/us/en/send-money/app/start'),
   ('Xoom',            'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Xoom_Logo.svg/320px-Xoom_Logo.svg.png',         'https://www.xoom.com/india/sendmoney'),
-  ('ICICI Money2India','https://www.money2india.com/m2i/images/m2i-logo.png',                                                    'https://www.money2india.com')
+  ('ICICI Money2India','https://www.money2india.com/m2i/images/m2i-logo.png',                                                    'https://www.money2india.com'),
+  ('Taptap Send',     'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Taptap_Send_logo.svg/320px-Taptap_Send_logo.svg.png', 'https://www.taptapsend.com/?lang=en-us')
 on conflict (name) do nothing;

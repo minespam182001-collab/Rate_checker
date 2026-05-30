@@ -4,6 +4,7 @@ import { scrapeWise } from "./wise";
 import { scrapeWesternUnion } from "./westernunion";
 import { scrapeXoom } from "./xoom";
 import { scrapeICICI } from "./icici";
+import { scrapeTaptap } from "./taptap";
 import { scrapeTrustpilot } from "./trustpilot";
 import { getFallbackRate } from "./fallback";
 import { ScrapeResult } from "./types";
@@ -27,6 +28,7 @@ export async function scrapeAllRates(): Promise<ScrapeResult[]> {
       withFallback("Western Union",     () => scrapeWesternUnion(browser)),
       withFallback("Xoom",              () => scrapeXoom(browser)),
       withFallback("ICICI Money2India", () => scrapeICICI(browser)),
+      withFallback("Taptap Send",       () => scrapeTaptap(browser)),
     ]);
     return results;
   } finally {
@@ -37,7 +39,7 @@ export async function scrapeAllRates(): Promise<ScrapeResult[]> {
 export async function scrapeAllTrustpilot() {
   const browser = await chromium.launch({ headless: true });
   try {
-    const providers = ["Remitly", "Wise", "Western Union", "Xoom", "ICICI Money2India"];
+    const providers = ["Remitly", "Wise", "Western Union", "Xoom", "ICICI Money2India", "Taptap Send"];
     const results = await Promise.all(
       providers.map((p) => scrapeTrustpilot(browser, p))
     );

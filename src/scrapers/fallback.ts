@@ -14,11 +14,12 @@ const PROVIDER_CONFIG: Record<
   string,
   { spread: number; fee: number }
 > = {
-  Remitly:           { spread: 0.007, fee: 0.00 },
-  Wise:              { spread: 0.000, fee: 2.30 }, // mid-market, fee-based model
-  "Western Union":   { spread: 0.018, fee: 5.00 },
-  Xoom:              { spread: 0.013, fee: 4.99 },
+  Remitly:             { spread: 0.007, fee: 0.00 },
+  Wise:                { spread: 0.000, fee: 2.30 }, // mid-market, fee-based model
+  "Western Union":     { spread: 0.018, fee: 5.00 },
+  Xoom:                { spread: 0.013, fee: 4.99 },
   "ICICI Money2India": { spread: 0.006, fee: 0.00 },
+  "Taptap Send":       { spread: 0.004, fee: 0.00 }, // known for competitive rates, no flat fee
 };
 
 let cachedRate: number | null = null;
