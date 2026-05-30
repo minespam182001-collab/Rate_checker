@@ -38,7 +38,7 @@ export async function scrapeWesternUnion(browser: Browser): Promise<ScrapeResult
 
     await page.goto(
       "https://www.westernunion.com/us/en/send-money/app/start?countryCode=IN",
-      { waitUntil: "networkidle", timeout: 30000 }
+      { waitUntil: "load", timeout: 30000 }
     );
 
     // Fallback: DOM

@@ -1,13 +1,10 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase";
 
 export const revalidate = 60; // ISR revalidate every 60s
 
 export async function GET() {
-  // Latest rate row per provider via a lateral join approach using Postgres's
-  // DISTINCT ON, which Supabase exposes through the .limit() + .order() pattern.
-  // We fetch the last 10 rows per provider then de-dup in JS — simple and correct.
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin()
     .from("rates")
     .select("*, provider:providers(*)")
     .order("scraped_at", { ascending: false })

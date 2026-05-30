@@ -5,18 +5,28 @@ import { scrapeWesternUnion } from "./westernunion";
 import { scrapeXoom } from "./xoom";
 import { scrapeICICI } from "./icici";
 import { scrapeTrustpilot } from "./trustpilot";
+import { getFallbackRate } from "./fallback";
 import { ScrapeResult } from "./types";
+
+async function withFallback(
+  name: string,
+  fn: () => Promise<ScrapeResult>
+): Promise<ScrapeResult> {
+  const result = await fn();
+  if (result.success) return result;
+  console.warn(`[scraper] ${name} failed (${result.error}), using fallback`);
+  return getFallbackRate(name);
+}
 
 export async function scrapeAllRates(): Promise<ScrapeResult[]> {
   const browser = await chromium.launch({ headless: true });
   try {
-    // Run all provider scrapes in parallel
     const results = await Promise.all([
-      scrapeRemitly(browser),
-      scrapeWise(browser),
-      scrapeWesternUnion(browser),
-      scrapeXoom(browser),
-      scrapeICICI(browser),
+      withFallback("Remitly",           () => scrapeRemitly(browser)),
+      withFallback("Wise",              () => scrapeWise(browser)),
+      withFallback("Western Union",     () => scrapeWesternUnion(browser)),
+      withFallback("Xoom",              () => scrapeXoom(browser)),
+      withFallback("ICICI Money2India", () => scrapeICICI(browser)),
     ]);
     return results;
   } finally {

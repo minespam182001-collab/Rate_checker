@@ -23,7 +23,7 @@ export async function scrapeXoom(browser: Browser): Promise<ScrapeResult> {
     });
 
     await page.goto("https://www.xoom.com/india/sendmoney", {
-      waitUntil: "networkidle",
+      waitUntil: "load",
       timeout: 30000,
     });
 

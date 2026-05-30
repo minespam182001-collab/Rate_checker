@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase";
 
 export const revalidate = 3600; // cache for 1 hour — trust scores change daily
 
 export async function GET() {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin()
     .from("providers")
     .select("*")
     .order("name");
