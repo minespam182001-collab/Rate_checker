@@ -4,21 +4,29 @@ on:
   schedule:
     # Every 5 minutes
     - cron: "*/5 * * * *"
-  workflow_dispatch: # allows manual trigger from GitHub UI
+  workflow_dispatch:
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
 
     steps:
-      - name: Trigger scrape endpoint
-        run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" \
-            -X POST "${{ secrets.APP_URL }}/api/scrape" \
-            -H "Authorization: Bearer ${{ secrets.SCRAPE_SECRET }}")
-          echo "HTTP status: $response"
-          if [ "$response" != "200" ]; then
-            echo "Scrape failed with status $response"
-            exit 1
-          fi
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium --with-deps
+
+      - name: Run scrapers and write to Supabase
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx ts-node --project tsconfig.scraper.json src/scrapers/writeToDb.ts

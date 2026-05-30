@@ -37,3 +37,5 @@ next-env.d.ts
 
 # playwright browsers
 /playwright-browsers
+
+.vercel
