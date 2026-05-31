@@ -34,7 +34,7 @@ async function getMidMarketRate(): Promise<number> {
     headers: { "User-Agent": "remittance-poc/0.1" },
   });
   if (!res.ok) throw new Error(`ExchangeRate API returned ${res.status}`);
-  const data = await res.json();
+  const data = await res.json() as any; // eslint-disable-line
   const rate: number = data?.rates?.INR;
   if (!rate) throw new Error("INR rate missing from ExchangeRate API response");
 
